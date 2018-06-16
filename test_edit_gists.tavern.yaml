@@ -1,0 +1,57 @@
+test_name: Get content of specific gist
+
+stages:
+  - &content_anchor
+    name: Get content of public gist
+    request:
+      url: "https://api.github.com/gists/0272ed55620c0e55c6ee132fb348b284"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        files.demo_gist.content: "Welcome to today's workshop on Tavern!"
+
+---
+
+test_name: Unsuccessfully edit gist's content
+
+stages:
+  - name: Unsuccessfully modify content of gist
+    request:
+      url: "https://api.github.com/gists/0272ed55620c0e55c6ee132fb348b284"
+      method: PATCH
+      json:
+        description: "Change content to meow"
+        files:
+          demo_gist:
+            content: "meow"
+    response:
+      # Authentication is missing in the request, hence the 404
+      status_code: 404
+      body:
+        message: "Not Found"
+
+---
+
+test_name: Successfully edit gist's content
+
+stages:
+  # Check first if the gist's content was unchanged by unsuccessful test above
+  - *content_anchor
+
+  - name: Successfully modify content of gist
+    request:
+      url: "https://api.github.com/gists/0272ed55620c0e55c6ee132fb348b284"
+      headers:
+        content-type: application/json
+        authorization: "token {tavern.env_vars.GITHUB_TOKEN}"
+      method: PATCH
+      json:
+        description: "Change content to meow"
+        files:
+          demo_gist:
+            content: "meow"
+    response:
+      status_code: 200
+      body:
+        files.demo_gist.content: "meow"

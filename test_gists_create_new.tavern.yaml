@@ -1,0 +1,51 @@
+test_name: Create a new gist
+
+stages:
+  - name: Create our second gist
+    request:
+      url: "{tavern.env_vars.GITHUB_API}/{tavern.env_vars.GISTS_ENDPOINT}"
+      headers:
+        content-type: application/json
+        authorization: "token {tavern.env_vars.GITHUB_TOKEN}"
+      method: POST
+      json:
+        description: "Add a gist using tavern"
+        files:
+          second_gist:
+            content: "Woohoo I added a gist using tavern!"
+        public: true
+    response:
+      status_code: 201
+      # We can save values from the response
+      save:
+        body:
+          second_gist_id: id
+          second_gist_html_url: html_url
+          second_gist_description: description
+
+  - name: Verify description of second gist
+    request:
+      url: "{tavern.env_vars.GITHUB_API}/{tavern.env_vars.GISTS_ENDPOINT}/{second_gist_id}"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        description: "{second_gist_description:s}"
+      # This will fail since we can only access the request variables of the same stage
+        # description: {tavern.request_vars.json.description}
+
+---
+
+# Can we use values from a different test?
+test_name: Use values from previous test_name
+
+stages:
+  - name: Get description of second gist
+    request:
+      url: "{tavern.env_vars.GITHUB_API}/{tavern.env_vars.GISTS_ENDPOINT}/{second_gist_id}"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        description: "{second_gist_description:s}"
+# Answer is No :(

@@ -1,0 +1,32 @@
+test_name: Commenting on a public gist
+
+stages:
+  - name: Give a new comment on a public gist
+    request:
+      url: "{tavern.env_vars.GITHUB_API}/{tavern.env_vars.GISTS_ENDPOINT}/{tavern.env_vars.GIST_ID}/comments"
+      headers:
+        content-type: application/json
+        authorization: "token {tavern.env_vars.GITHUB_TOKEN}"
+      method: POST
+      json:
+        body: "This is an awesome workshop!"
+    response:
+      status_code: 201
+      body:
+        # Check out request variables!
+        body: "{tavern.request_vars.json.body}"
+
+  - name: Give another comment to the same public gist
+    request:
+      url: "{tavern.env_vars.GITHUB_API}/{tavern.env_vars.GISTS_ENDPOINT}/{tavern.env_vars.GIST_ID}/comments"
+      headers:
+        content-type: application/json
+        authorization: "token {tavern.env_vars.GITHUB_TOKEN}"
+      method: POST
+      json:
+        body: "I totally agree!"
+    response:
+      status_code: 201
+      body:
+        # Notice how the request variables are isolated per stage?
+        body: "{tavern.request_vars.json.body}"
